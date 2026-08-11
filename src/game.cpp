@@ -1,0 +1,212 @@
+// game.cpp
+#include "game.h"
+#include "../include/state.h"
+#include <iostream>
+#include <SDL3_ttf/SDL_ttf.h>
+
+
+Game::Game() = default;
+
+Game::~Game() {
+    Shutdown();
+}
+
+bool Game::Init(const char* title) {
+    if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
+        std::cerr << "SDL_Init failed: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    if (!TTF_Init()) {
+        std::cerr << "TTF_Init failed: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    m_logicalWidth = 1280;
+    m_logicalHeight = 800;
+
+    m_window = SDL_CreateWindow(title, m_logicalWidth, m_logicalHeight, SDL_WINDOW_FULLSCREEN);
+    if (!m_window) {
+        std::cerr << "SDL_CreateWindow failed: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    //SDL_GetWindowSize(m_window, &m_screenWidth, &m_screenHeight);
+
+
+
+    m_renderer = SDL_CreateRenderer(m_window, nullptr);
+    if (!m_renderer) {
+        std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
+        return false;
+    }
+
+    m_assetManager = std::make_unique<AssetManager>(m_renderer);
+
+    if (!SDL_SetRenderLogicalPresentation(m_renderer, m_logicalWidth, m_logicalHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
+        std::cerr << "Warning: Failed to set logical presentation: " << SDL_GetError() << std::endl;
+    }
+
+    if (!SDL_SetRenderVSync(m_renderer, 1)) {
+        std::cerr << "Warning: Could not enable VSync: " << SDL_GetError() << std::endl;
+    }
+
+    // Hide the system mouse cursor
+    if (!SDL_HideCursor()) {
+        std::cerr << "Warning: Failed to hide cursor: " << SDL_GetError() << std::endl;
+    }
+
+    m_audioDevice = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
+    if (m_audioDevice == 0) {
+        std::cerr << "Warning: Failed to open default audio device: " << SDL_GetError() << std::endl;
+    }
+
+    m_assetManager = std::make_unique<AssetManager>(m_renderer);
+    m_audioManager = std::make_unique<AudioManager>(m_audioDevice);
+
+
+    m_context.game = this;
+    m_context.renderer = m_renderer;
+    m_context.assets = m_assetManager.get();
+    m_context.input = &m_input;
+    m_context.audio = m_audioManager.get();
+
+    m_running = true;
+    return true;
+}
+
+void Game::Run() {
+    // Get high-resolution counter values
+    Uint64 lastTime = SDL_GetPerformanceCounter();
+    Uint64 frequency = SDL_GetPerformanceFrequency();
+
+    while (m_running) {
+        Uint64 currentTime = SDL_GetPerformanceCounter();
+
+        // Calculate the elapsed time in seconds
+        float dt = static_cast<float>(currentTime - lastTime) / frequency;
+        lastTime = currentTime;
+
+        // Nuance: Clamp delta time to prevent a "spiral of death" or huge physics jumps
+        // if the window is dragged, the game hitches, or you hit a breakpoint during debugging.
+        if (dt > 0.1f) {
+            dt = 0.1f;
+        }
+
+        HandleEvents();
+        Update(dt); // Pass dt here
+
+        m_audioManager->Update();
+
+        Render();
+        ApplyStateChanges();
+
+
+    }
+}
+
+void Game::Update(float dt) {
+    if (!m_states.empty()) {
+        m_states.back()->Update(&m_context, dt);
+    }
+}
+
+void Game::Quit() {
+    m_running = false;
+}
+
+// --- STATE MANAGEMENT ---
+
+void Game::ChangeState(State* state) {
+    m_stateCommands.push_back({ StateCommand::Type::Change, std::unique_ptr<State>(state) });
+}
+
+void Game::PushState(State* state) {
+    m_stateCommands.push_back({ StateCommand::Type::Push, std::unique_ptr<State>(state) });
+}
+
+void Game::PopState() {
+    m_stateCommands.push_back({ StateCommand::Type::Pop, nullptr });
+}
+
+void Game::ApplyStateChanges() {
+    if (m_stateCommands.empty()) return;
+
+    for (auto& cmd : m_stateCommands) {
+        switch (cmd.type) {
+            case StateCommand::Type::Change:
+                if (!m_states.empty()) {
+                    m_states.pop_back(); // Automatically deletes the old state safely
+                }
+                m_states.push_back(std::move(cmd.state));
+                break;
+
+            case StateCommand::Type::Push:
+                m_states.push_back(std::move(cmd.state));
+                break;
+
+            case StateCommand::Type::Pop:
+                if (!m_states.empty()) {
+                    m_states.pop_back(); // Automatically deletes the top state
+                }
+                break;
+        }
+    }
+    m_stateCommands.clear(); // Any unapplied states are auto-deleted here too!
+}
+
+// --- GAME LOOP ---
+
+void Game::HandleEvents() {
+    m_input.BeginFrame();
+
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_EVENT_QUIT) {
+            Quit();
+        }
+
+        m_input.ProcessEvent(event);
+
+        if (!m_states.empty()) {
+            m_states.back()->HandleEvents(&m_context, event);
+        }
+    }
+}
+
+void Game::Render() {
+    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
+    SDL_RenderClear(m_renderer);
+
+    // Use const auto& to prevent trying to copy the unique_ptr (which is not allowed)
+    for (const auto& state : m_states) {
+        state->Render(&m_context, m_renderer);
+    }
+
+    SDL_RenderPresent(m_renderer);
+}
+
+void Game::Shutdown() {
+    m_states.clear();        // RAII cleans up all states automatically
+    m_stateCommands.clear(); // RAII cleans up any pending queue items
+
+    m_audioManager.reset();
+    m_assetManager.reset();
+
+    if (m_audioDevice) {
+        SDL_CloseAudioDevice(m_audioDevice);
+        m_audioDevice = 0;
+    }
+
+    if (m_renderer) {
+        SDL_DestroyRenderer(m_renderer);
+        m_renderer = nullptr;
+    }
+    if (m_window) {
+        SDL_DestroyWindow(m_window);
+        m_window = nullptr;
+    }
+
+    TTF_Quit();
+    SDL_Quit();
+}

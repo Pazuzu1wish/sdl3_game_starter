@@ -3,7 +3,18 @@ project(sdl3_game_starter)
 
 set(CMAKE_CXX_STANDARD 20)
 
-add_executable(sdl3_game_starter src/main.cpp)
+add_executable(sdl3_game_starter src/main.cpp
+        src/assetManager.cpp
+        src/audioManager.cpp
+        src/game.cpp
+        include/game.h
+        src/inputManager.cpp
+        include/inputManager.h
+        include/gameContext.h
+        src/state.cpp
+        include/state.h
+        include/sound.h
+)
 
 add_custom_command(TARGET sdl3_game_starter POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
