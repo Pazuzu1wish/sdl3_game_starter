@@ -1,6 +1,7 @@
 // state.h
 #pragma once
 
+#include <string>
 #include <SDL3/SDL.h>
 
 // Forward declare GameContext to avoid circular include issues
@@ -38,19 +39,25 @@ private:
 // ==========================================
 // GAME STATE
 // ==========================================
+
 class GameState : public State {
 public:
-    GameState(GameContext* context) {}
-    ~GameState() override = default;
+    GameState(GameContext* context);
+    ~GameState() override;
 
     void HandleEvents(GameContext* context, const SDL_Event& event) override;
     void Update(GameContext* context, float dt) override;
     void Render(GameContext* context, SDL_Renderer* renderer) override;
 
 private:
-    float m_time = 0.0f; // Tracks elapsed time for animations
-};
+    float m_time = 0.0f;
 
+    // Typewriter effect variables
+    std::string m_fullText = "GAMEPLAY STATE";
+    int m_visibleChars = 0;
+    SDL_Texture* m_textTexture = nullptr;
+    SDL_FRect m_textRect = {};
+};
 // ==========================================
 // PAUSE STATE
 // ==========================================

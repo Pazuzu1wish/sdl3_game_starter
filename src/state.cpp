@@ -73,6 +73,17 @@ void TitleState::Render(GameContext* context, SDL_Renderer* renderer) {
 // GAME STATE
 // ==========================================
 
+GameState::GameState(GameContext* context) {
+    // Load the font if it isn't loaded already
+    context->assets->LoadFont("GameFont_32", "assets/fonts/font.ttf", 32.0f);
+}
+
+GameState::~GameState() {
+    if (m_textTexture) {
+        SDL_DestroyTexture(m_textTexture);
+    }
+}
+
 void GameState::HandleEvents(GameContext* context, const SDL_Event& event) {
     // Left empty
 }
@@ -81,11 +92,49 @@ void GameState::Update(GameContext* context, float dt) {
     InputManager* input = context->input;
     Game* game = context->game;
 
-    // Advance our animation timer
     m_time += dt;
 
+    // --- Typewriter Effect Logic ---
+    float typingSpeed = 10.0f; // 10 characters per second
+    float pauseDuration = 1.5f; // Wait 1.5 seconds after full text is shown
+    float loopDuration = (m_fullText.length() / typingSpeed) + pauseDuration;
+
+    // Use modulo to loop the local time
+    float localTime = std::fmod(m_time, loopDuration);
+
+    int newVisibleChars = static_cast<int>(localTime * typingSpeed);
+    if (newVisibleChars > m_fullText.length()) {
+        newVisibleChars = m_fullText.length();
+    }
+
+    // Only recreate the texture if the number of visible characters has changed
+    if (newVisibleChars != m_visibleChars) {
+        m_visibleChars = newVisibleChars;
+
+        if (m_textTexture) {
+            SDL_DestroyTexture(m_textTexture);
+            m_textTexture = nullptr;
+        }
+
+        if (m_visibleChars > 0) {
+            std::string currentText = m_fullText.substr(0, m_visibleChars);
+            SDL_Color white = {255, 255, 255, 255};
+            m_textTexture = context->assets->CreateTextTexture(currentText, "GameFont_32", white);
+
+            if (m_textTexture) {
+                float w = 0, h = 0;
+                SDL_GetTextureSize(m_textTexture, &w, &h);
+
+                m_textRect.w = w;
+                m_textRect.h = h;
+                m_textRect.x = game->GetScreenWidth() / 2.0f - (w / 2.0f);
+                m_textRect.y = game->GetScreenHeight() / 3.0f; // Put it a bit above the center
+            }
+        }
+    }
+    // -------------------------------
+
     if (input->IsPressed(Action::Pause)) {
-        // Pass the context so PauseState can initialize its resources
         game->PushState(new PauseState(context));
     }
 
@@ -95,14 +144,18 @@ void GameState::Update(GameContext* context, float dt) {
 }
 
 void GameState::Render(GameContext* context, SDL_Renderer* renderer) {
-    // Use sine waves based on m_time to create a smooth, pulsing color.
-    // We base it around your original dark slate color (30, 30, 60)
+    // Color morphing background
     Uint8 r = static_cast<Uint8>(30 + 20 * std::sin(m_time * 1.0f));
     Uint8 g = static_cast<Uint8>(30 + 20 * std::sin(m_time * 0.8f + 2.0f));
     Uint8 b = static_cast<Uint8>(60 + 30 * std::sin(m_time * 0.5f + 4.0f));
 
     SDL_SetRenderDrawColor(renderer, r, g, b, 255);
     SDL_RenderClear(renderer);
+
+    // Draw the typewriter text
+    if (m_textTexture) {
+        SDL_RenderTexture(renderer, m_textTexture, nullptr, &m_textRect);
+    }
 }
 
 // ==========================================
