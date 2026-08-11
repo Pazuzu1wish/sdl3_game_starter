@@ -1,6 +1,7 @@
 // state.cpp
 #include "state.h"
 #include "game.h"
+#include <cmath>
 #include <iostream>
 
 // ==========================================
@@ -80,6 +81,9 @@ void GameState::Update(GameContext* context, float dt) {
     InputManager* input = context->input;
     Game* game = context->game;
 
+    // Advance our animation timer
+    m_time += dt;
+
     if (input->IsPressed(Action::Pause)) {
         // Pass the context so PauseState can initialize its resources
         game->PushState(new PauseState(context));
@@ -91,8 +95,13 @@ void GameState::Update(GameContext* context, float dt) {
 }
 
 void GameState::Render(GameContext* context, SDL_Renderer* renderer) {
-    // Dark slate color
-    SDL_SetRenderDrawColor(renderer, 30, 30, 60, 255);
+    // Use sine waves based on m_time to create a smooth, pulsing color.
+    // We base it around your original dark slate color (30, 30, 60)
+    Uint8 r = static_cast<Uint8>(30 + 20 * std::sin(m_time * 1.0f));
+    Uint8 g = static_cast<Uint8>(30 + 20 * std::sin(m_time * 0.8f + 2.0f));
+    Uint8 b = static_cast<Uint8>(60 + 30 * std::sin(m_time * 0.5f + 4.0f));
+
+    SDL_SetRenderDrawColor(renderer, r, g, b, 255);
     SDL_RenderClear(renderer);
 }
 

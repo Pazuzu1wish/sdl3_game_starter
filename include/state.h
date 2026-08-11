@@ -46,6 +46,9 @@ public:
     void HandleEvents(GameContext* context, const SDL_Event& event) override;
     void Update(GameContext* context, float dt) override;
     void Render(GameContext* context, SDL_Renderer* renderer) override;
+
+private:
+    float m_time = 0.0f; // Tracks elapsed time for animations
 };
 
 // ==========================================
