@@ -96,6 +96,20 @@ sdl3_game_starter/
 
 ## Game States
 
+### Screenshots
+
+Title Screen
+
+![Title State](./titile_screen.png)
+
+Game State
+
+![Game State](./gameplay_state.png)
+
+Pause State
+
+![Pause State](./pause_state.png)
+
 ### TitleState
 - Displays "Press ENTER or X to Play" message
 - Plays looped background music
