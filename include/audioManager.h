@@ -32,6 +32,9 @@ public:
     float GetMusicVolume() const { return m_musicVolume; }
     float GetMasterVolume() const { return m_masterVolume; }
 
+    // Debug: Get active stream counts
+    void GetStreamCount(int& activeCount, int& loopingCount) const;
+
     void StopAll();
 
 private:

@@ -88,6 +88,15 @@ void AudioManager::Update() {
     }
 }
 
+void AudioManager::GetStreamCount(int& activeCount, int& loopingCount) const {
+    activeCount = 0;
+    loopingCount = 0;
+    for (const auto& stream : m_activeStreams) {
+        activeCount++;
+        if (stream.isLooping) loopingCount++;
+    }
+}
+
 void AudioManager::SetSFXVolume(float volume) {
     m_sfxVolume = std::clamp(volume, 0.0f, 1.0f);
     for (auto& active : m_activeStreams) {
