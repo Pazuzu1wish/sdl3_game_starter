@@ -41,8 +41,6 @@ bool Game::Init(const char* title) {
         return false;
     }
 
-    m_assetManager = std::make_unique<AssetManager>(m_renderer);
-
     if (!SDL_SetRenderLogicalPresentation(m_renderer, m_logicalWidth, m_logicalHeight, SDL_LOGICAL_PRESENTATION_LETTERBOX)) {
         std::cerr << "Warning: Failed to set logical presentation: " << SDL_GetError() << std::endl;
     }

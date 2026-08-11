@@ -41,7 +41,7 @@ private:
 // ==========================================
 class GameState : public State {
 public:
-    GameState() = default;
+    GameState(GameContext* context) {}
     ~GameState() override = default;
 
     void HandleEvents(GameContext* context, const SDL_Event& event) override;

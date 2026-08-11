@@ -1,5 +1,6 @@
 // audioManager.cpp
 #include "audioManager.h"
+#include "sound.h"
 #include <algorithm>
 #include <iostream>
 

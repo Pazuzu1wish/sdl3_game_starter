@@ -54,7 +54,7 @@ void TitleState::Update(GameContext* context, float dt) {
 
         context->audio->StopMusic();
 
-        game->ChangeState(new GameState());
+        game->ChangeState(new GameState(context));
     }
 
     if (input->IsPressed(Action::Cancel)) {
