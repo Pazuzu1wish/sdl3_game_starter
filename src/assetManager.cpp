@@ -22,7 +22,7 @@ std::string AssetManager::ResolvePath(const std::string& relativePath) const {
 
 bool AssetManager::LoadFont(const std::string& key, const std::string& relativePath, float fontSize) {
     if (m_fonts.find(key) != m_fonts.end()) {
-        return true; // Already loaded and cached
+        return true;
     }
 
     std::string fullPath = ResolvePath(relativePath);

@@ -31,10 +31,6 @@ bool Game::Init(const char* title) {
         return false;
     }
 
-    //SDL_GetWindowSize(m_window, &m_screenWidth, &m_screenHeight);
-
-
-
     m_renderer = SDL_CreateRenderer(m_window, nullptr);
     if (!m_renderer) {
         std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
@@ -85,14 +81,12 @@ void Game::Run() {
         float dt = static_cast<float>(currentTime - lastTime) / frequency;
         lastTime = currentTime;
 
-        // Nuance: Clamp delta time to prevent a "spiral of death" or huge physics jumps
-        // if the window is dragged, the game hitches, or you hit a breakpoint during debugging.
         if (dt > 0.1f) {
             dt = 0.1f;
         }
 
         HandleEvents();
-        Update(dt); // Pass dt here
+        Update(dt);
 
         m_audioManager->Update();
 
@@ -134,7 +128,7 @@ void Game::ApplyStateChanges() {
         switch (cmd.type) {
             case StateCommand::Type::Change:
                 if (!m_states.empty()) {
-                    m_states.pop_back(); // Automatically deletes the old state safely
+                    m_states.pop_back();
                 }
                 m_states.push_back(std::move(cmd.state));
                 break;
@@ -145,12 +139,12 @@ void Game::ApplyStateChanges() {
 
             case StateCommand::Type::Pop:
                 if (!m_states.empty()) {
-                    m_states.pop_back(); // Automatically deletes the top state
+                    m_states.pop_back();
                 }
                 break;
         }
     }
-    m_stateCommands.clear(); // Any unapplied states are auto-deleted here too!
+    m_stateCommands.clear();
 }
 
 // --- GAME LOOP ---

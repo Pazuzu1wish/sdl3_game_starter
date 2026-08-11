@@ -10,10 +10,10 @@ A modern C++20 game engine template built on **SDL3** with a clean, production-r
 - **Audio System**: Sound effects, looped music, individual volume controls with master volume
 - **Asset Management**: Centralized font, texture, and sound loading with caching
 - **Rendering Pipeline**: 1280×800 logical resolution with automatic letterboxing
+- **Unopinionated Architecture** (2D or 3D!): Bring your own Entity Component System (ECS) or rendering pipeline. The template defaults to SDL_Renderer for quick 2D prototyping, but you can easily swap it for OpenGL, Vulkan, or the new SDL3 GPU API for full 3D games. The core engine (Input, Audio, States) doesn't care!
 
 ### 🛠️ Technical Highlights
 - **Modern C++20** with RAII and smart pointers throughout
-- **Zero external dependencies** beyond SDL3 and its standard modules
 - **Memory-safe**: Uses `unique_ptr` for all resource management
 - **Separation of Concerns**: Modular design with dedicated managers for input, audio, assets
 - **Fullscreen Support**: Configurable window mode with logical/physical resolution handling
@@ -204,14 +204,8 @@ m_gamepadMaps[Action::Attack] = { SDL_GAMEPAD_BUTTON_SOUTH };
 ## Known Limitations & Design Patterns
 
 - **Looping music must be explicitly stopped**: The AudioManager requires `StopMusic()` or `StopAll()` to clean up looping streams. This is by design—non-looping SFX self-destruct when playback completes.
-- **No 3D rendering**: SDL3 2D rendering only (use OpenGL/Vulkan integration if needed)
+- **No builtin 3D rendering (can be easily added though**: SDL3 2D rendering only (use OpenGL/Vulkan integration if needed)
 - **Single-threaded**: All updates happen on the main thread
 - **Fullscreen enforced**: Modify `game.cpp` line 28 to enable windowed mode
-
-## License
-
-This template is provided as a starting point. Modify as needed for your project.
-
----
 
 **Happy game dev!** 🎮

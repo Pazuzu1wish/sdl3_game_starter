@@ -42,8 +42,6 @@ private:
     SDL_Renderer*  m_renderer = nullptr;
     bool           m_running  = false;
 
-    //int m_screenWidth  = 0;
-    //int m_screenHeight = 0;
     int m_logicalWidth = 1280;
     int m_logicalHeight = 800;
 

@@ -9,7 +9,6 @@ struct Sound {
 
     ~Sound() {
         if (buffer) {
-            // Note: In SDL3, SDL_FreeWAV is removed. We use standard SDL_free
             SDL_free(buffer);
         }
     }

@@ -15,5 +15,5 @@ struct GameContext {
     InputManager* input = nullptr;
     AudioManager* audio = nullptr;
 
-    // You can easily add Audio, Camera, or Config managers here later!
+    // You can easily add Camera, or Config managers here later!
 };

@@ -33,7 +33,6 @@ public:
 private:
     SDL_Texture* m_textTexture = nullptr;
     SDL_FRect m_textRect = {};
-    // Note: We no longer need to keep a TTF_Font* here because the AssetManager caches it!
 };
 
 // ==========================================
@@ -64,5 +63,4 @@ public:
 private:
     SDL_Texture* m_textTexture = nullptr;
     SDL_FRect m_textRect = {};
-    // Note: We no longer need to keep a TTF_Font* here either!
 };
