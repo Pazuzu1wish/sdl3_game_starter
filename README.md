@@ -100,7 +100,7 @@ sdl3_game_starter/
 
 Title Screen
 
-![Title State](./titile_screen.png)
+![Title State](titie_screen.png)
 
 Game State
 

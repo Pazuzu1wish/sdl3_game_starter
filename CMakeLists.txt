@@ -35,10 +35,7 @@ find_package(glm CONFIG REQUIRED)
 
 find_package(EnTT CONFIG REQUIRED)
 
-find_package(SDL3_shadercross CONFIG REQUIRED)
-
 find_package(SDL3_image CONFIG REQUIRED)
 
 target_link_libraries(sdl3_game_starter PRIVATE SDL3::SDL3  SDL3_ttf::SDL3_ttf  glm::glm
-        nlohmann_json::nlohmann_json  EnTT::EnTT  SDL3_shadercross::SDL3_shadercross
-        SDL3_image::SDL3_image)
+        nlohmann_json::nlohmann_json  EnTT::EnTT  SDL3_image::SDL3_image)
