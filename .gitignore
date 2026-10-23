@@ -1,0 +1,108 @@
+/vendored
+
+# Prerequisites
+*.d
+
+# Object files
+*.o
+*.ko
+
+*.elf
+
+# Linker output
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+*.so
+*.so.*
+*.dylib
+*.dll
+*.dll.*
+*.exe
+*.out
+*.app
+
+# Executables (adjust if your program has a specific name)
+program
+*.exe
+*.out
+*.app
+
+# Debug files
+*.pdb
+*.idb
+*.ipdb
+*.iobj
+
+# CMake build directories (where CLion builds)
+cmake-build-debug/
+cmake-build-release/
+cmake-build-relwithdebinfo/
+cmake-build-minsizerel/
+build/
+out/
+
+# CLion user-specific files
+.idea/
+*.iml
+*.iws
+
+# VS Code (if you ever use it)
+.vscode/
+
+# Compiled Python files (if using build scripts)
+__pycache__/
+*.py[cod]
+
+# Swap files
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.bak
+
+# CMake generated files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+compile_commands.json
+CTestTestfile.cmake
+*.cmake
+.cmake/
+CMakeLists.txt.user
+
+# Package management
+vcpkg_installed/
+conaninfo.txt
+conanbuildinfo.*
+
+# Code coverage
+*.gcno
+*.gcda
+*.gcov
+
+# Doxygen documentation
+docs/html/
+docs/latex/
+docs/pdf/
+
+# Logs
+*.log
