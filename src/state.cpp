@@ -37,10 +37,7 @@ TitleState::TitleState(GameContext* context) {
 }
 
 TitleState::~TitleState() {
-    // Only destroy the dynamic text texture this state specifically created
-    if (m_textTexture) {
-        SDL_DestroyTexture(m_textTexture);
-    }
+    // Textures are owned by the AssetManager's text cache; do not destroy here.
 }
 
 void TitleState::HandleEvents(GameContext* context, const SDL_Event& event) {
@@ -82,9 +79,7 @@ GameState::GameState(GameContext* context) {
 }
 
 GameState::~GameState() {
-    if (m_textTexture) {
-        SDL_DestroyTexture(m_textTexture);
-    }
+    // Textures are owned by the AssetManager's text cache; do not destroy here.
 }
 
 void GameState::HandleEvents(GameContext* context, const SDL_Event& event) {
@@ -114,11 +109,6 @@ void GameState::Update(GameContext* context, float dt) {
     if (newVisibleChars != m_visibleChars) {
         m_visibleChars = newVisibleChars;
 
-        if (m_textTexture) {
-            SDL_DestroyTexture(m_textTexture);
-            m_textTexture = nullptr;
-        }
-
         if (m_visibleChars > 0) {
             std::string currentText = m_fullText.substr(0, m_visibleChars);
             SDL_Color white = {255, 255, 255, 255};
@@ -133,6 +123,8 @@ void GameState::Update(GameContext* context, float dt) {
                 m_textRect.x = game->GetScreenWidth() / 2.0f - (w / 2.0f);
                 m_textRect.y = game->GetScreenHeight() / 3.0f; // Put it a bit above the center
             }
+        } else {
+            m_textTexture = nullptr;
         }
     }
     // -------------------------------
@@ -187,9 +179,7 @@ PauseState::PauseState(GameContext* context) {
 }
 
 PauseState::~PauseState() {
-    if (m_textTexture) {
-        SDL_DestroyTexture(m_textTexture);
-    }
+    // Textures are owned by the AssetManager's text cache; do not destroy here.
 }
 
 void PauseState::HandleEvents(GameContext* context, const SDL_Event& event) {

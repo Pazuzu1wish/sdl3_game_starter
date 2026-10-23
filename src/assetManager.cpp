@@ -89,7 +89,21 @@ void AssetManager::FreeTexture(const std::string& key) {
     m_textures.erase(key);
 }
 
+std::string AssetManager::MakeTextCacheKey(const std::string& text, const std::string& fontKey, SDL_Color color) const {
+    return text + "|" + fontKey + "|" +
+           std::to_string(color.r) + "," + std::to_string(color.g) + "," +
+           std::to_string(color.b) + "," + std::to_string(color.a);
+}
+
 SDL_Texture* AssetManager::CreateTextTexture(const std::string& text, const std::string& fontKey, SDL_Color color) {
+    std::string cacheKey = MakeTextCacheKey(text, fontKey, color);
+
+    // Return the cached texture if we already rendered this exact string/font/color
+    auto it = m_textTextures.find(cacheKey);
+    if (it != m_textTextures.end()) {
+        return it->second.get();
+    }
+
     TTF_Font* font = GetFont(fontKey);
     if (!font) return nullptr;
 
@@ -104,14 +118,30 @@ SDL_Texture* AssetManager::CreateTextTexture(const std::string& text, const std:
 
     if (!texture) {
         std::cerr << "AssetManager: Failed to create text texture: " << SDL_GetError() << std::endl;
+        return nullptr;
     }
 
+    // AssetManager owns the cached texture; callers must not destroy it.
+    m_textTextures[cacheKey] = std::unique_ptr<SDL_Texture, TextureDeleter>(texture);
     return texture;
+}
+
+SDL_Texture* AssetManager::GetTextTexture(const std::string& cacheKey) const {
+    auto it = m_textTextures.find(cacheKey);
+    if (it != m_textTextures.end()) {
+        return it->second.get();
+    }
+    return nullptr;
+}
+
+void AssetManager::FreeTextTexture(const std::string& cacheKey) {
+    m_textTextures.erase(cacheKey);
 }
 
 void AssetManager::Clear() {
     m_textures.clear();
     m_fonts.clear();
+    m_textTextures.clear();
 }
 
 bool AssetManager::LoadSound(const std::string& key, const std::string& relativePath) {

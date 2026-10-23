@@ -41,8 +41,16 @@ public:
     SDL_Texture* GetTexture(const std::string& key) const;
     void FreeTexture(const std::string& key);
 
-    // On-the-fly utility to generate text textures using a cached font
+    // On-the-fly utility to generate text textures using a cached font.
+    // Results are cached by (text, fontKey, color) and owned by the AssetManager;
+    // callers must NOT SDL_DestroyTexture the returned pointer.
     SDL_Texture* CreateTextTexture(const std::string& text, const std::string& fontKey, SDL_Color color);
+
+    // Retrieve a previously cached text texture (nullptr if not cached).
+    SDL_Texture* GetTextTexture(const std::string& cacheKey) const;
+
+    // Remove a specific cached text texture.
+    void FreeTextTexture(const std::string& cacheKey);
 
     // Sound Management
     bool LoadSound(const std::string& key, const std::string& relativePath);
@@ -54,10 +62,12 @@ public:
 
 private:
     std::string ResolvePath(const std::string& relativePath) const;
+    std::string MakeTextCacheKey(const std::string& text, const std::string& fontKey, SDL_Color color) const;
 
     SDL_Renderer* m_renderer = nullptr;
     std::unordered_map<std::string, std::unique_ptr<SDL_Texture, TextureDeleter>> m_textures;
     std::unordered_map<std::string, std::unique_ptr<TTF_Font, FontDeleter>> m_fonts;
+    std::unordered_map<std::string, std::unique_ptr<SDL_Texture, TextureDeleter>> m_textTextures;
 
     std::unordered_map<std::string, std::unique_ptr<Sound>> m_sounds;
 
