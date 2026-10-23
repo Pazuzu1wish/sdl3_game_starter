@@ -167,8 +167,9 @@ void Game::HandleEvents() {
 }
 
 void Game::Render() {
-    SDL_SetRenderDrawColor(m_renderer, 0, 0, 0, 255);
-    SDL_RenderClear(m_renderer);
+    // Each state is responsible for clearing/drawing its own background.
+    // Clearing here would be redundant when a state clears itself (e.g. GameState),
+    // and would wipe an overlaid state's content (e.g. PauseState over GameState).
 
     // Use const auto& to prevent trying to copy the unique_ptr (which is not allowed)
     for (const auto& state : m_states) {

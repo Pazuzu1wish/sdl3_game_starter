@@ -64,6 +64,9 @@ void TitleState::Update(GameContext* context, float dt) {
 }
 
 void TitleState::Render(GameContext* context, SDL_Renderer* renderer) {
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
     if (m_textTexture) {
         SDL_RenderTexture(renderer, m_textTexture, nullptr, &m_textRect);
     }
