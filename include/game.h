@@ -2,6 +2,7 @@
 #pragma once
 
 #include <SDL3/SDL.h>
+#include <string>
 #include <vector>
 #include <memory>
 #include "inputManager.h"
@@ -44,6 +45,7 @@ private:
     void HandleEvents();
     void Update(float dt);
     void Render();
+    void RenderDebugOverlay();
     void ApplyStateChanges();
 
     SDL_Window*    m_window   = nullptr;
@@ -58,6 +60,11 @@ private:
 
     int m_windowWidth = 1280;  // actual window pixel size
     int m_windowHeight = 800;
+
+    // FPS / debug overlay bookkeeping (updated once per second in Run())
+    float m_frameTimeAccum = 0.0f;
+    int   m_frameCount = 0;
+    std::string m_fpsText = "FPS: --";
 
     SDL_AudioDeviceID m_audioDevice = 0;
     std::unique_ptr<AudioManager> m_audioManager;

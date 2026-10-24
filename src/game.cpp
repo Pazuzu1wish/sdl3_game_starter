@@ -2,6 +2,7 @@
 #include "game.h"
 #include "../include/state.h"
 #include <iostream>
+#include <string>
 #include <SDL3_ttf/SDL_ttf.h>
 
 
@@ -56,6 +57,9 @@ bool Game::Init(const char* title) {
     m_assetManager = std::make_unique<AssetManager>(m_renderer);
     m_audioManager = std::make_unique<AudioManager>(m_audioDevice);
 
+    // Font used by the FPS / debug overlay
+    m_assetManager->LoadFont("DebugFont_16", "assets/fonts/font.ttf", 16.0f);
+
 
     m_context.game = this;
     m_context.renderer = m_renderer;
@@ -72,6 +76,10 @@ void Game::Run() {
     Uint64 lastTime = SDL_GetPerformanceCounter();
     Uint64 frequency = SDL_GetPerformanceFrequency();
 
+    // FPS / debug overlay bookkeeping
+    float frameTimeAccum = 0.0f;
+    int   frameCount = 0;
+
     while (m_running) {
         Uint64 currentTime = SDL_GetPerformanceCounter();
 
@@ -81,6 +89,18 @@ void Game::Run() {
 
         if (dt > 0.1f) {
             dt = 0.1f;
+        }
+
+        // Update the debug overlay text once per second
+        frameTimeAccum += dt;
+        ++frameCount;
+        if (frameTimeAccum >= 1.0f) {
+            float fps  = static_cast<float>(frameCount) / frameTimeAccum;
+            float avgMs = frameTimeAccum / static_cast<float>(frameCount) * 1000.0f;
+            m_fpsText = "FPS: " + std::to_string(static_cast<int>(fps))
+                      + "  " + std::to_string(static_cast<int>(avgMs)) + "ms";
+            frameTimeAccum = 0.0f;
+            frameCount = 0;
         }
 
         HandleEvents();
@@ -211,7 +231,25 @@ void Game::Render() {
         state->Render(&m_context, m_renderer);
     }
 
+    // FPS / debug overlay drawn on top of every state
+    RenderDebugOverlay();
+
     SDL_RenderPresent(m_renderer);
+}
+
+void Game::RenderDebugOverlay() {
+    SDL_Color white = {255, 255, 255, 255};
+    SDL_Texture* fpsTexture = m_assetManager->CreateTextTexture(m_fpsText, "DebugFont_16", white);
+    if (!fpsTexture) {
+        return;
+    }
+
+    float w = 0, h = 0;
+    SDL_GetTextureSize(fpsTexture, &w, &h);
+
+    // Top-left corner of the logical screen
+    SDL_FRect fpsRect = { 10.0f, 10.0f, w, h };
+    SDL_RenderTexture(m_renderer, fpsTexture, nullptr, &fpsRect);
 }
 
 void Game::Shutdown() {
