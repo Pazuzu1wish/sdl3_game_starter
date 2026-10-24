@@ -18,6 +18,12 @@ public:
     virtual void Update(GameContext* context, float dt) = 0;
     virtual void Render(GameContext* context, SDL_Renderer* renderer) = 0;
 
+    // Lifecycle hooks called by Game when a state becomes the top of the stack
+    // (Enter) and when it is removed (Exit). Override to load/unload assets and
+    // start/stop music cleanly per state. Base implementations do nothing.
+    virtual void Enter(GameContext* context) {}
+    virtual void Exit(GameContext* context) {}
+
     // Whether this state wants the mouse cursor hidden (gameplay) or shown (menus).
     virtual bool CursorHidden() const { return false; }
 };
@@ -29,6 +35,9 @@ class TitleState : public State {
 public:
     TitleState(GameContext* context);
     ~TitleState() override;
+
+    void Enter(GameContext* context) override;
+    void Exit(GameContext* context) override;
 
     void HandleEvents(GameContext* context, const SDL_Event& event) override;
     void Update(GameContext* context, float dt) override;
@@ -47,6 +56,9 @@ class GameState : public State {
 public:
     GameState(GameContext* context);
     ~GameState() override;
+
+    void Enter(GameContext* context) override;
+    void Exit(GameContext* context) override;
 
     void HandleEvents(GameContext* context, const SDL_Event& event) override;
     void Update(GameContext* context, float dt) override;
@@ -70,6 +82,9 @@ class PauseState : public State {
 public:
     PauseState(GameContext* context);
     ~PauseState() override;
+
+    void Enter(GameContext* context) override;
+    void Exit(GameContext* context) override;
 
     void HandleEvents(GameContext* context, const SDL_Event& event) override;
     void Update(GameContext* context, float dt) override;

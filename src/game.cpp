@@ -166,27 +166,35 @@ void Game::PopState() {
 void Game::ApplyStateChanges() {
     if (m_stateCommands.empty()) return;
 
-    for (auto& cmd : m_stateCommands) {
+    // Drain the command queue so that Enter/Exit callbacks can safely queue
+    // new state changes (processed next frame) without invalidating iteration.
+    std::vector<StateCommand> commands;
+    commands.swap(m_stateCommands);
+
+    for (auto& cmd : commands) {
         switch (cmd.type) {
             case StateCommand::Type::Change:
                 if (!m_states.empty()) {
+                    m_states.back()->Exit(&m_context);
                     m_states.pop_back();
                 }
                 m_states.push_back(std::move(cmd.state));
+                m_states.back()->Enter(&m_context);
                 break;
 
             case StateCommand::Type::Push:
                 m_states.push_back(std::move(cmd.state));
+                m_states.back()->Enter(&m_context);
                 break;
 
             case StateCommand::Type::Pop:
                 if (!m_states.empty()) {
+                    m_states.back()->Exit(&m_context);
                     m_states.pop_back();
                 }
                 break;
         }
     }
-    m_stateCommands.clear();
 }
 
 // --- GAME LOOP ---

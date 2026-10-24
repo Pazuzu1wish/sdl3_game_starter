@@ -8,7 +8,16 @@
 // TITLE STATE
 // ==========================================
 
-TitleState::TitleState(GameContext* context) {
+TitleState::TitleState(GameContext* /*context*/) {
+    // Asset loading and music playback happen in Enter() so they occur when the
+    // state actually becomes active, not at construction time.
+}
+
+TitleState::~TitleState() {
+    // Textures are owned by the AssetManager's text cache; do not destroy here.
+}
+
+void TitleState::Enter(GameContext* context) {
     AssetManager* assets = context->assets;
     Game* game = context->game;
 
@@ -36,8 +45,11 @@ TitleState::TitleState(GameContext* context) {
     }
 }
 
-TitleState::~TitleState() {
-    // Textures are owned by the AssetManager's text cache; do not destroy here.
+void TitleState::Exit(GameContext* context) {
+    // Stop the looping title music when leaving this state
+    if (context->audio) {
+        context->audio->StopMusic();
+    }
 }
 
 void TitleState::HandleEvents(GameContext* context, const SDL_Event& event) {
@@ -49,9 +61,6 @@ void TitleState::Update(GameContext* context, float dt) {
     Game* game = context->game;
 
     if (input->IsPressed(Action::Confirm)) {
-
-        context->audio->StopMusic();
-
         game->ChangeState(new GameState(context));
     }
 
@@ -73,13 +82,22 @@ void TitleState::Render(GameContext* context, SDL_Renderer* renderer) {
 // GAME STATE
 // ==========================================
 
-GameState::GameState(GameContext* context) {
-    // Load the font if it isn't loaded already
-    context->assets->LoadFont("GameFont_32", "assets/fonts/font.ttf", 32.0f);
+GameState::GameState(GameContext* /*context*/) {
+    // Asset loading happens in Enter() so it occurs when the state becomes active.
 }
 
 GameState::~GameState() {
     // Textures are owned by the AssetManager's text cache; do not destroy here.
+}
+
+void GameState::Enter(GameContext* context) {
+    // Load the font if it isn't loaded already (LoadFont is idempotent)
+    context->assets->LoadFont("GameFont_32", "assets/fonts/font.ttf", 32.0f);
+}
+
+void GameState::Exit(GameContext* /*context*/) {
+    // No per-state cleanup: fonts and text textures are owned/cached by the
+    // AssetManager and released at shutdown.
 }
 
 void GameState::HandleEvents(GameContext* context, const SDL_Event& event) {
@@ -157,7 +175,15 @@ void GameState::Render(GameContext* context, SDL_Renderer* renderer) {
 // PAUSE STATE
 // ==========================================
 
-PauseState::PauseState(GameContext* context) {
+PauseState::PauseState(GameContext* /*context*/) {
+    // Asset loading happens in Enter() so it occurs when the state becomes active.
+}
+
+PauseState::~PauseState() {
+    // Textures are owned by the AssetManager's text cache; do not destroy here.
+}
+
+void PauseState::Enter(GameContext* context) {
     AssetManager* assets = context->assets;
     Game* game = context->game;
 
@@ -178,8 +204,9 @@ PauseState::PauseState(GameContext* context) {
     }
 }
 
-PauseState::~PauseState() {
-    // Textures are owned by the AssetManager's text cache; do not destroy here.
+void PauseState::Exit(GameContext* /*context*/) {
+    // No per-state cleanup: fonts and text textures are owned/cached by the
+    // AssetManager and released at shutdown.
 }
 
 void PauseState::HandleEvents(GameContext* context, const SDL_Event& event) {
