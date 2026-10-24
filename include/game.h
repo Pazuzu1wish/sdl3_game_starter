@@ -32,6 +32,10 @@ public:
     int GetScreenWidth()  const    { return m_logicalWidth; }
     int GetScreenHeight() const    { return m_logicalHeight; }
 
+    // Actual window pixel size (updated on resize; logical presentation handles rendering scaling)
+    int GetWindowWidth()  const { return m_windowWidth; }
+    int GetWindowHeight() const { return m_windowHeight; }
+
     // Fullscreen / cursor toggles
     void ToggleFullscreen();
     void SetCursorVisible(bool visible);
@@ -51,6 +55,9 @@ private:
 
     int m_logicalWidth = 1280;
     int m_logicalHeight = 800;
+
+    int m_windowWidth = 1280;  // actual window pixel size
+    int m_windowHeight = 800;
 
     SDL_AudioDeviceID m_audioDevice = 0;
     std::unique_ptr<AudioManager> m_audioManager;

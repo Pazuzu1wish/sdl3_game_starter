@@ -31,6 +31,9 @@ bool Game::Init(const char* title) {
         return false;
     }
 
+    // Track the actual window pixel size (logical presentation handles rendering scaling).
+    SDL_GetWindowSize(m_window, &m_windowWidth, &m_windowHeight);
+
     m_renderer = SDL_CreateRenderer(m_window, nullptr);
     if (!m_renderer) {
         std::cerr << "SDL_CreateRenderer failed: " << SDL_GetError() << std::endl;
@@ -182,11 +185,12 @@ void Game::HandleEvents() {
             ToggleFullscreen();
         }
 
-        // React to window resizes. Logical presentation (letterbox) handles scaling
-        // automatically, so we only report the new size here.
+        // React to window resizes. Logical presentation (letterbox) handles rendering
+        // scaling automatically, so we only track the new window pixel size here.
         if (event.type == SDL_EVENT_WINDOW_RESIZED) {
-            std::cout << "Window resized to " << event.window.data1 << "x" << event.window.data2
-                      << std::endl;
+            m_windowWidth  = static_cast<int>(event.window.data1);
+            m_windowHeight = static_cast<int>(event.window.data2);
+            std::cout << "Window resized to " << m_windowWidth << "x" << m_windowHeight << std::endl;
         }
 
         m_input.ProcessEvent(event);
