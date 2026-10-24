@@ -45,11 +45,6 @@ bool Game::Init(const char* title) {
         std::cerr << "Warning: Could not enable VSync: " << SDL_GetError() << std::endl;
     }
 
-    // Hide the system mouse cursor
-    if (!SDL_HideCursor()) {
-        std::cerr << "Warning: Failed to hide cursor: " << SDL_GetError() << std::endl;
-    }
-
     m_audioDevice = SDL_OpenAudioDevice(SDL_AUDIO_DEVICE_DEFAULT_PLAYBACK, nullptr);
     if (m_audioDevice == 0) {
         std::cerr << "Warning: Failed to open default audio device: " << SDL_GetError() << std::endl;
@@ -100,11 +95,35 @@ void Game::Run() {
 void Game::Update(float dt) {
     if (!m_states.empty()) {
         m_states.back()->Update(&m_context, dt);
+
+        // Show the cursor in menus, hide it during gameplay
+        SetCursorVisible(!m_states.back()->CursorHidden());
     }
 }
 
 void Game::Quit() {
     m_running = false;
+}
+
+void Game::ToggleFullscreen() {
+    m_fullscreen = !m_fullscreen;
+    if (!SDL_SetWindowFullscreen(m_window, m_fullscreen ? SDL_WINDOW_FULLSCREEN : 0)) {
+        std::cerr << "Warning: Failed to toggle fullscreen: " << SDL_GetError() << std::endl;
+    }
+}
+
+void Game::SetCursorVisible(bool visible) {
+    if (m_cursorVisible == visible) return; // no-op when already in the desired state
+    m_cursorVisible = visible;
+    if (visible) {
+        if (!SDL_ShowCursor()) {
+            std::cerr << "Warning: Failed to show cursor: " << SDL_GetError() << std::endl;
+        }
+    } else {
+        if (!SDL_HideCursor()) {
+            std::cerr << "Warning: Failed to hide cursor: " << SDL_GetError() << std::endl;
+        }
+    }
 }
 
 // --- STATE MANAGEMENT ---
@@ -156,6 +175,18 @@ void Game::HandleEvents() {
     while (SDL_PollEvent(&event)) {
         if (event.type == SDL_EVENT_QUIT) {
             Quit();
+        }
+
+        // F11 toggles fullscreen / windowed mode (handled at game level, before states)
+        if (event.type == SDL_EVENT_KEY_DOWN && event.key.key == SDLK_F11) {
+            ToggleFullscreen();
+        }
+
+        // React to window resizes. Logical presentation (letterbox) handles scaling
+        // automatically, so we only report the new size here.
+        if (event.type == SDL_EVENT_WINDOW_RESIZED) {
+            std::cout << "Window resized to " << event.window.data1 << "x" << event.window.data2
+                      << std::endl;
         }
 
         m_input.ProcessEvent(event);

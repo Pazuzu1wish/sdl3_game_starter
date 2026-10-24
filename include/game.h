@@ -32,6 +32,10 @@ public:
     int GetScreenWidth()  const    { return m_logicalWidth; }
     int GetScreenHeight() const    { return m_logicalHeight; }
 
+    // Fullscreen / cursor toggles
+    void ToggleFullscreen();
+    void SetCursorVisible(bool visible);
+
 private:
     void HandleEvents();
     void Update(float dt);
@@ -41,6 +45,9 @@ private:
     SDL_Window*    m_window   = nullptr;
     SDL_Renderer*  m_renderer = nullptr;
     bool           m_running  = false;
+
+    bool m_fullscreen    = true;   // window starts fullscreen (see Init)
+    bool m_cursorVisible = true;   // shown by default; states hide/show as needed
 
     int m_logicalWidth = 1280;
     int m_logicalHeight = 800;

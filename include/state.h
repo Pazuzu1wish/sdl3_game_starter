@@ -17,6 +17,9 @@ public:
     virtual void HandleEvents(GameContext* context, const SDL_Event& event) = 0;
     virtual void Update(GameContext* context, float dt) = 0;
     virtual void Render(GameContext* context, SDL_Renderer* renderer) = 0;
+
+    // Whether this state wants the mouse cursor hidden (gameplay) or shown (menus).
+    virtual bool CursorHidden() const { return false; }
 };
 
 // ==========================================
@@ -48,6 +51,8 @@ public:
     void HandleEvents(GameContext* context, const SDL_Event& event) override;
     void Update(GameContext* context, float dt) override;
     void Render(GameContext* context, SDL_Renderer* renderer) override;
+
+    bool CursorHidden() const override { return true; }
 
 private:
     float m_time = 0.0f;
